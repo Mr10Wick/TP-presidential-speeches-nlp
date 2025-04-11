@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud, STOPWORDS
 from collections import Counter
 
-# === CONFIGURATION ===
-nltk.data.path = ['/usr/local/nltk_data']
-nltk.download('punkt')
-nltk.download('wordnet')
-nltk.download('stopwords')
-nltk.download('averaged_perceptron_tagger')
+# === CONFIGURATION à executer une fois  ===
+# nltk.data.path = ['/usr/local/nltk_data']
+# nltk.download('punkt')
+# nltk.download('wordnet')
+# nltk.download('stopwords')
+# nltk.download('averaged_perceptron_tagger')
 
 # === FONCTIONS ===
 
