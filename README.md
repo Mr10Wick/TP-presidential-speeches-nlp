@@ -6,7 +6,7 @@ L’objectif est d’identifier les émotions exprimées, les thèmes dominants,
 
 ---
 
-##� Objectif
+##� Objectif du projet
 
 Appliquer différentes techniques de NLP sur un corpus de discours présidentiels afin d’en extraire des tendances sémantiques, des tonalités, et des indices linguistiques pertinents, tout en illustrant les résultats via des visualisations claires.
 
