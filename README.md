@@ -6,7 +6,7 @@ L’objectif est d’identifier les émotions exprimées, les thèmes dominants,
 
 ---
 
-##� Objectif 
+##� Objectif du projet 
 
 Appliquer différentes techniques de NLP sur un corpus de discours présidentiels afin d’en extraire des tendances sémantiques, des tonalités, et des indices linguistiques pertinents, tout en illustrant les résultats via des visualisations claires.
 
@@ -32,11 +32,20 @@ Appliquer différentes techniques de NLP sur un corpus de discours présidentiel
 
 ## Visualisations produites
 
-- Histogramme de la polarité des sentiments
-- Nuage de mots des termes les plus fréquents
-- Graphique en barres des scores TF-IDF les plus élevés
-- Courbe de l’évolution du sentiment dans le temps
-- Moyenne du sentiment par président
+**Histogramme de la polarité des sentiments
+Affiche la distribution des émotions dans les discours
+
+**Nuage de mots
+Met en évidence les termes les plus fréquents
+
+**Graphique en barres des mots les plus significatifs (TF-IDF)
+Affiche les 20 mots avec les scores TF-IDF les plus élevés
+
+**Courbe de l’évolution du sentiment dans le temps
+Montre comment le ton émotionnel a changé au fil des années
+
+**Barplot du sentiment moyen par président
+Compare les présidents selon la tonalité émotionnelle moyenne de leurs discours
 
 ---
 
