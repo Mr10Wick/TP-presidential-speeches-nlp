@@ -15,6 +15,10 @@ from wordcloud import WordCloud, STOPWORDS
 
 # === CONFIGURATION ===
 nltk.data.path = ['/usr/local/nltk_data']
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
 
 # === FONCTIONS ===
 
@@ -35,6 +39,10 @@ def stem_text(text):
 def get_sentiment(text):
     return TextBlob(text).sentiment.polarity
 
+def get_pos_tags(text):
+    tokens = nltk.word_tokenize(text)
+    return nltk.pos_tag(tokens)
+
 # === CHARGEMENT DES DONNÉES ===
 
 df = pd.read_csv("inaug_speeches.csv", encoding="ISO-8859-1")
@@ -51,10 +59,18 @@ df['cleaned_text'] = df['text'].apply(clean_text)
 df['stemmed_text'] = df['text'].apply(stem_text)
 df['sentiment'] = df['cleaned_text'].apply(get_sentiment)
 
+# === TAGGING POS (morphosyntaxique) ===
+
+df['pos_tags'] = df['cleaned_text'].apply(get_pos_tags)
+
+# Affichage exemple :
+print("\n📌 Exemple de POS tags pour un discours :")
+print(df['pos_tags'].iloc[0][:15])  # Affiche les 15 premiers tags pour un exemple
+
 # === HISTOGRAMME DE SENTIMENT ===
 
 plt.figure(figsize=(8, 4))
-plt.hist(df['sentiment'], bins=20, color='cornflowerblue', edgecolor='black')
+plt.hist(df['sentiment'], bins=20, color='skyblue', edgecolor='black')
 plt.title("Distribution des sentiments des discours")
 plt.xlabel("Score de sentiment")
 plt.ylabel("Nombre de discours")
@@ -86,9 +102,9 @@ print(tfidf_df.head())
 mean_tfidf = tfidf_df.mean().sort_values(ascending=False).head(20)
 plt.figure(figsize=(10, 6))
 mean_tfidf.plot(kind='bar', color='darkorange')
-plt.title("Top 20 mots (score moyen TF-IDF)")
+plt.title("Top 20 mots avec les scores TF-IDF les plus élevés")
 plt.xlabel("Mot")
-plt.ylabel("Score TF-IDF")
+plt.ylabel("Score TF-IDF moyen")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
@@ -101,7 +117,7 @@ if 'president' in df.columns:
     print("\n📌 Sentiment moyen par président :")
     print(sentiment_by_president)
     
-    # 👉 VISUALISATION ajoutée ici
+    # Visualisation
     plt.figure(figsize=(12, 6))
     sentiment_by_president.plot(kind='barh', color='steelblue')
     plt.title("Sentiment moyen par président")
