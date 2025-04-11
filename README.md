@@ -38,12 +38,6 @@ Affiche la distribution des émotions dans les discours
 **Nuage de mots
 Met en évidence les termes les plus fréquents
 
-**Graphique en barres des mots les plus significatifs (TF-IDF)
-Affiche les 20 mots avec les scores TF-IDF les plus élevés
-
-**Courbe de l’évolution du sentiment dans le temps
-Montre comment le ton émotionnel a changé au fil des années
-
 **Barplot du sentiment moyen par président
 Compare les présidents selon la tonalité émotionnelle moyenne de leurs discours
 
