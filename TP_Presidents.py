@@ -1,8 +1,3 @@
-# Importation de mon fichier CSV depuis mon local 
-
-# from google.colab import files
-# uploaded = files.upload()
-
 import pandas as pd
 import re
 import nltk
@@ -12,6 +7,7 @@ from textblob import TextBlob
 from sklearn.feature_extraction.text import TfidfVectorizer
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud, STOPWORDS
+from collections import Counter
 
 # === CONFIGURATION ===
 nltk.data.path = ['/usr/local/nltk_data']
@@ -43,96 +39,98 @@ def get_pos_tags(text):
     tokens = nltk.word_tokenize(text)
     return nltk.pos_tag(tokens)
 
-# === CHARGEMENT DES DONNÉES ===
+# === SCRIPT PRINCIPAL ===
 
-df = pd.read_csv("inaug_speeches.csv", encoding="ISO-8859-1")
-print("Colonnes disponibles :", df.columns.tolist())
-df.drop_duplicates(subset='text', inplace=True)
+def main():
+    # Chargement des données
+    df = pd.read_csv("inaug_speeches.csv", encoding="ISO-8859-1")
+    print("Colonnes disponibles :", df.columns.tolist())
+    df.drop_duplicates(subset='text', inplace=True)
 
-# === PRÉTRAITEMENT ===
+    # Initialisation
+    global stop_words, lemmatizer, stemmer
+    stop_words = set(stopwords.words('english'))
+    lemmatizer = WordNetLemmatizer()
+    stemmer = PorterStemmer()
 
-stop_words = set(stopwords.words('english'))
-lemmatizer = WordNetLemmatizer()
-stemmer = PorterStemmer()
+    # Nettoyage et analyse
+    df['cleaned_text'] = df['text'].apply(clean_text)
+    df['stemmed_text'] = df['text'].apply(stem_text)
+    df['sentiment'] = df['cleaned_text'].apply(get_sentiment)
 
-df['cleaned_text'] = df['text'].apply(clean_text)
-df['stemmed_text'] = df['text'].apply(stem_text)
-df['sentiment'] = df['cleaned_text'].apply(get_sentiment)
+    # POS tagging sur texte brut (meilleure qualité)
+    df['pos_tags'] = df['text'].apply(get_pos_tags)
+    print("\n📌 Exemple de POS tags pour un discours :")
+    print(df['pos_tags'].iloc[0][:15])
 
-# === TAGGING POS (morphosyntaxique) ===
+    # Histogramme des sentiments
+    plt.figure(figsize=(8, 4))
+    plt.hist(df['sentiment'], bins=20, color='skyblue', edgecolor='black')
+    plt.title("Distribution des sentiments des discours")
+    plt.xlabel("Score de sentiment")
+    plt.ylabel("Nombre de discours")
+    plt.show()
 
-df['pos_tags'] = df['cleaned_text'].apply(get_pos_tags)
+    # Nuage de mots
+    text = " ".join(df['cleaned_text'])
+    combined_stopwords = stop_words.union(STOPWORDS)
+    wordcloud = WordCloud(width=800, height=400, stopwords=combined_stopwords).generate(text)
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.title("Nuage de mots des discours")
+    plt.show()
 
-# Affichage exemple :
-print("\n📌 Exemple de POS tags pour un discours :")
-print(df['pos_tags'].iloc[0][:15])  # Affiche les 15 premiers tags pour un exemple
+    # TF-IDF
+    vectorizer = TfidfVectorizer(max_features=100)
+    X = vectorizer.fit_transform(df['cleaned_text'])
+    tfidf_df = pd.DataFrame(X.toarray(), columns=vectorizer.get_feature_names_out())
 
-# === HISTOGRAMME DE SENTIMENT ===
+    print("\n📋 Exemple de matrice TF-IDF :")
+    print(tfidf_df.head())
 
-plt.figure(figsize=(8, 4))
-plt.hist(df['sentiment'], bins=20, color='skyblue', edgecolor='black')
-plt.title("Distribution des sentiments des discours")
-plt.xlabel("Score de sentiment")
-plt.ylabel("Nombre de discours")
-plt.show()
-
-# === NUAGE DE MOTS ===
-
-text = " ".join(df['cleaned_text'])
-combined_stopwords = stop_words.union(STOPWORDS)
-wordcloud = WordCloud(width=800, height=400, stopwords=combined_stopwords).generate(text)
-
-plt.figure(figsize=(10, 5))
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis('off')
-plt.title("Nuage de mots des discours")
-plt.show()
-
-# === TF-IDF ===
-
-vectorizer = TfidfVectorizer(max_features=100)
-X = vectorizer.fit_transform(df['cleaned_text'])
-tfidf_df = pd.DataFrame(X.toarray(), columns=vectorizer.get_feature_names_out())
-
-print("\n📋 Exemple de matrice TF-IDF :")
-print(tfidf_df.head())
-
-# === BARPLOT TF-IDF ===
-
-mean_tfidf = tfidf_df.mean().sort_values(ascending=False).head(20)
-plt.figure(figsize=(10, 6))
-mean_tfidf.plot(kind='bar', color='darkorange')
-plt.title("Top 20 mots avec les scores TF-IDF les plus élevés")
-plt.xlabel("Mot")
-plt.ylabel("Score TF-IDF moyen")
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
-
-# === ANALYSE PAR PRÉSIDENT ===
-
-if 'president' in df.columns:
-    sentiment_by_president = df.groupby('president')['sentiment'].mean().sort_values()
-    
-    print("\n📌 Sentiment moyen par président :")
-    print(sentiment_by_president)
-    
-    # Visualisation
-    plt.figure(figsize=(12, 6))
-    sentiment_by_president.plot(kind='barh', color='steelblue')
-    plt.title("Sentiment moyen par président")
-    plt.xlabel("Score de sentiment moyen")
-    plt.ylabel("Président")
+    # Barplot des top TF-IDF
+    mean_tfidf = tfidf_df.mean().sort_values(ascending=False).head(20)
+    plt.figure(figsize=(10, 6))
+    mean_tfidf.plot(kind='bar', color='darkorange')
+    plt.title("Top 20 mots avec les scores TF-IDF les plus élevés")
+    plt.xlabel("Mot")
+    plt.ylabel("Score TF-IDF moyen")
+    plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
 
-# === ÉVOLUTION DANS LE TEMPS ===
+    # Analyse par président
+    if 'president' in df.columns:
+        sentiment_by_president = df.groupby('president')['sentiment'].mean().sort_values()
+        print("\n📌 Sentiment moyen par président :")
+        print(sentiment_by_president)
 
-if 'year' in df.columns:
-    plt.figure(figsize=(10, 5))
-    df.groupby('year')['sentiment'].mean().plot(marker='o', color='green')
-    plt.title("Évolution du sentiment moyen par année")
-    plt.xlabel("Année")
-    plt.ylabel("Sentiment moyen")
-    plt.grid(True)
-    plt.show()
+        plt.figure(figsize=(12, 6))
+        sentiment_by_president.plot(kind='barh', color='steelblue')
+        plt.title("Sentiment moyen par président")
+        plt.xlabel("Score de sentiment moyen")
+        plt.ylabel("Président")
+        plt.tight_layout()
+        plt.show()
+
+    # Évolution du sentiment dans le temps
+    if 'year' in df.columns:
+        plt.figure(figsize=(10, 5))
+        df.groupby('year')['sentiment'].mean().plot(marker='o', color='green')
+        plt.title("Évolution du sentiment moyen par année")
+        plt.xlabel("Année")
+        plt.ylabel("Sentiment moyen")
+        plt.grid(True)
+        plt.show()
+
+    # Analyse des POS tags (types de mots)
+    all_tags = [tag for sublist in df['pos_tags'] for _, tag in sublist]
+    pos_counts = Counter(all_tags)
+    print("\n📊 Fréquence des types de mots (POS tags) :")
+    for tag, count in pos_counts.most_common(10):
+        print(f"{tag} : {count}")
+
+# === LANCEMENT ===
+if __name__ == "__main__":
+    main()
