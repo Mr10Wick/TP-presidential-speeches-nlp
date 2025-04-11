@@ -47,9 +47,35 @@ Appliquer différentes techniques de NLP sur un corpus de discours présidentiel
 - Visualisations lisibles avec titres, axes et couleurs soignées
 - Rapport clair avec interprétation des résultats
 
+## Structure du code 
+
+1. Chargement des données
+
+Chargement du fichier CSV contenant les discours d'investiture depuis Kaggle.
+
+
+2. Prétraitement des textes
+
+Nettoyage, tokenisation, lemmatisation et stemming.
+
+
+3. Analyse de sentiment
+
+Utilisation de TextBlob pour évaluer la polarité émotionnelle des discours.
+
+
+4. Analyse TF-IDF
+
+Extraction des mots les plus significatifs via TF-IDF.
+
+
+5. Visualisations
+
+Histogramme des sentiments, nuage de mots, barplot TF-IDF.
+
 
 ## 👨‍💻 Auteur
 
-**Léo** – Étudiant en informatique  
+Étudiant en informatique  
 Projet réalisé dans le cadre d’un TP sur la data visualisation et le traitement de texte (avril 2025)
 
